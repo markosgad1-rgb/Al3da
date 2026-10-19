@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { api, ApiError } from './services/api';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { api, ApiError, saveLocalCachedData } from './services/api';
+import { 
+  getFirestoreDb, subscribeToFirestore, getFirebaseConfig 
+} from './services/firebaseSync';
 import { AppData, Tool, AppSettings } from './types';
 import { initialSeedData } from './seedData';
 import { Navbar } from './components/Navbar';
@@ -17,14 +20,18 @@ import { DashboardView } from './components/DashboardView';
 import { AdminManagementView } from './components/AdminManagementView';
 import { ToolDossierModal } from './components/ToolDossierModal';
 import { WhatsAppShareModal } from './components/WhatsAppShareModal';
-import { AlertCircle, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { FirebaseSetupModal } from './components/FirebaseSetupModal';
+import { AlertCircle, RefreshCw, CheckCircle2, Flame, Cloud } from 'lucide-react';
 
 export default function App() {
   const [data, setData] = useState<AppData>(initialSeedData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const [networkError, setNetworkError] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  // Cloud status
+  const [isCloudConnected, setIsCloudConnected] = useState<boolean>(Boolean(getFirebaseConfig()));
+  const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState<boolean>(false);
 
   // Current active screen
   const [currentTab, setCurrentTab] = useState<
@@ -43,36 +50,67 @@ export default function App() {
   const [whatsAppModalOpen, setWhatsAppModalOpen] = useState<boolean>(false);
   const [whatsAppMessage, setWhatsAppMessage] = useState<string>('');
 
+  const unsubscribeRef = useRef<(() => void) | null>(null);
+
   // Toast notification
   const showToast = (msg: string) => {
     setSuccessToast(msg);
     setTimeout(() => setSuccessToast(null), 3500);
   };
 
-  // Fetch live central data from server
-  const loadData = useCallback(async (isBackground = false) => {
-    if (!isBackground) setIsRefreshing(true);
-    setNetworkError(null);
-    try {
-      const serverData = await api.getData();
-      setData(serverData);
-    } catch (err: any) {
-      console.error('Failed to load data:', err);
-      setNetworkError(err.message || 'تعذر تحميل البيانات من الخادم المركزي');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+  // Setup Firestore Subscription or fallback to API / local cache
+  const initSync = useCallback(() => {
+    const firestore = getFirestoreDb();
+
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+
+    if (firestore) {
+      setIsCloudConnected(true);
+      setIsLoading(true);
+
+      const unsub = subscribeToFirestore(
+        firestore,
+        (cloudData) => {
+          setData(cloudData);
+          saveLocalCachedData(cloudData);
+          setIsLoading(false);
+          setIsRefreshing(false);
+        },
+        (err) => {
+          console.error('🚨 [App Sync Error] تعذر استلام تحديثات سحابية لحظية من Firestore:', err);
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
+      );
+      unsubscribeRef.current = unsub;
+    } else {
+      setIsCloudConnected(false);
+      // Fallback: try Express API or local cache
+      api.getData().then(({ data: fetchedData }) => {
+        setData(fetchedData);
+        setIsLoading(false);
+      });
     }
   }, []);
 
   useEffect(() => {
-    loadData();
-    // Background polling every 20 seconds to keep all devices in sync
-    const interval = setInterval(() => {
-      loadData(true);
-    }, 20000);
-    return () => clearInterval(interval);
-  }, [loadData]);
+    initSync();
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
+    };
+  }, [initSync]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    initSync();
+    setTimeout(() => setIsRefreshing(false), 800);
+    showToast('تم تحديث البيانات');
+  };
 
   // Admin Login
   const handleAdminLogin = (password: string): boolean => {
@@ -95,7 +133,6 @@ export default function App() {
 
   // Open Tool Dossier
   const handleOpenToolDossier = (tool: Tool) => {
-    // Refresh with latest data object
     const freshTool = data.tools.find((t) => t.code === tool.code) || tool;
     setInspectedTool(freshTool);
     setIsDossierOpen(true);
@@ -118,12 +155,9 @@ export default function App() {
   }): Promise<boolean> => {
     try {
       const res = await api.checkoutTools(payload);
-      if (res.success) {
-        setData(res.data);
-        showToast(res.message);
-        return true;
-      }
-      return false;
+      if (res.data) setData(res.data);
+      showToast(res.message);
+      return true;
     } catch (err: any) {
       throw err;
     }
@@ -138,13 +172,10 @@ export default function App() {
   }): Promise<boolean> => {
     try {
       const res = await api.returnTools(payload);
-      if (res.success) {
-        setData(res.data);
-        showToast(res.message);
-        setCurrentTab('home');
-        return true;
-      }
-      return false;
+      if (res.data) setData(res.data);
+      showToast(res.message);
+      setCurrentTab('home');
+      return true;
     } catch (err: any) {
       throw err;
     }
@@ -161,12 +192,9 @@ export default function App() {
   }): Promise<boolean> => {
     try {
       const res = await api.transferTools(payload);
-      if (res.success) {
-        setData(res.data);
-        showToast(res.message);
-        return true;
-      }
-      return false;
+      if (res.data) setData(res.data);
+      showToast(res.message);
+      return true;
     } catch (err: any) {
       throw err;
     }
@@ -176,8 +204,8 @@ export default function App() {
   const handleSaveTool = async (tool: Partial<Tool>): Promise<boolean> => {
     try {
       const res = await api.saveTool(tool);
-      setData(res.data);
-      showToast('تم حفظ بيانات العدة بنجاح');
+      if (res.data) setData(res.data);
+      showToast('تم حفظ بيانات العدة');
       return true;
     } catch (err: any) {
       alert(err.message);
@@ -193,7 +221,7 @@ export default function App() {
   ): Promise<boolean> => {
     try {
       const res = await api.changeToolStatus(code, status, notes);
-      setData(res.data);
+      if (res.data) setData(res.data);
       if (inspectedTool && inspectedTool.code === code) {
         setInspectedTool({ ...inspectedTool, status, notes });
       }
@@ -209,7 +237,7 @@ export default function App() {
   const handleSaveTechnician = async (tech: Partial<any>): Promise<boolean> => {
     try {
       const res = await api.saveTechnician(tech);
-      setData(res.data);
+      if (res.data) setData(res.data);
       showToast('تم حفظ بيانات الفني');
       return true;
     } catch (err: any) {
@@ -222,7 +250,7 @@ export default function App() {
   const handleSaveSite = async (site: Partial<any>): Promise<boolean> => {
     try {
       const res = await api.saveSite(site);
-      setData(res.data);
+      if (res.data) setData(res.data);
       showToast('تم حفظ بيانات الموقع');
       return true;
     } catch (err: any) {
@@ -236,7 +264,7 @@ export default function App() {
     try {
       const res = await api.saveSettings(settings);
       setData((prev) => ({ ...prev, settings: res.settings }));
-      showToast('تم حفظ إعدادات النظام بنجاح');
+      showToast('تم حفظ إعدادات النظام');
       return true;
     } catch (err: any) {
       alert(err.message);
@@ -251,7 +279,7 @@ export default function App() {
   ): Promise<boolean> => {
     try {
       const res = await api.importBatch(type, items);
-      setData(res.data);
+      if (res.data) setData(res.data);
       showToast(res.message);
       return true;
     } catch (err: any) {
@@ -264,7 +292,7 @@ export default function App() {
   const handleResetSeed = async (): Promise<boolean> => {
     try {
       const res = await api.resetSeed();
-      setData(res.data);
+      if (res.data) setData(res.data);
       showToast(res.message);
       return true;
     } catch (err: any) {
@@ -281,9 +309,11 @@ export default function App() {
         onTabChange={(tab) => setCurrentTab(tab as any)}
         isAdminLoggedIn={isAdminLoggedIn}
         onAdminClick={() => setCurrentTab('admin')}
-        onRefresh={() => loadData(false)}
+        onRefresh={handleManualRefresh}
         isRefreshing={isRefreshing}
         companyName={data.settings.companyName}
+        onOpenFirebaseModal={() => setIsFirebaseModalOpen(true)}
+        isCloudConnected={isCloudConnected}
       />
 
       {/* Success Toast */}
@@ -294,20 +324,32 @@ export default function App() {
         </div>
       )}
 
-      {/* Network Error Banner */}
-      {networkError && (
-        <div className="max-w-4xl mx-auto px-4 mt-3">
-          <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-800 text-xs sm:text-sm flex items-center justify-between gap-2 shadow-2xs">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-              <span className="font-semibold">{networkError}</span>
+      {/* Helpful Cloud Sync Banner (shown when Firebase is not connected yet) */}
+      {!isCloudConnected && (
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 mt-3">
+          <div 
+            onClick={() => setIsFirebaseModalOpen(true)}
+            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-l from-amber-500/15 via-amber-50 to-amber-100/60 border border-amber-300 text-amber-950 text-xs sm:text-sm flex items-center justify-between gap-3 shadow-2xs cursor-pointer hover:bg-amber-100/90 transition-all"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 rounded-xl bg-amber-500 text-slate-950 shrink-0 shadow-2xs">
+                <Flame className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-black text-slate-900">
+                  لتفعيل المزامنة اللحظية بين هواتف الفنيين أونلاين:
+                </span>{' '}
+                <span className="font-semibold text-amber-900">
+                  يرجى ربط مشروع Firebase (Al3da) لتسمع التعديلات مباشرة على كل الأجهزة.
+                </span>
+              </div>
             </div>
+
             <button
-              onClick={() => loadData(false)}
-              className="px-3 py-1 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1 shrink-0"
+              type="button"
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs shrink-0 shadow-xs flex items-center gap-1.5"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>إعادة المحاولة</span>
+              <span>اضغط للربط (دقيقة واحدة)</span>
             </button>
           </div>
         </div>
@@ -372,6 +414,7 @@ export default function App() {
             onSaveSettings={handleSaveSettings}
             onImportBatch={handleImportBatch}
             onResetSeed={handleResetSeed}
+            onOpenFirebaseModal={() => setIsFirebaseModalOpen(true)}
           />
         )}
       </main>
@@ -394,6 +437,13 @@ export default function App() {
         onClose={() => setWhatsAppModalOpen(false)}
         messageText={whatsAppMessage}
         targetPhone={data.settings.whatsappGroupPhone}
+      />
+
+      {/* Firebase Cloud Connection Modal */}
+      <FirebaseSetupModal
+        isOpen={isFirebaseModalOpen}
+        onClose={() => setIsFirebaseModalOpen(false)}
+        onConfigSaved={() => initSync()}
       />
 
       {/* Mobile Fixed Bottom Navigation Bar */}

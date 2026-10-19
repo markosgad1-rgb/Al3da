@@ -1,5 +1,6 @@
 import React from 'react';
-import { Wrench, Shield, RefreshCw, Smartphone, HardHat } from 'lucide-react';
+import { Wrench, Shield, RefreshCw, Smartphone, HardHat, Flame, Cloud } from 'lucide-react';
+import { getFirebaseConfig } from '../services/firebaseSync';
 
 interface NavbarProps {
   currentTab: string;
@@ -9,6 +10,8 @@ interface NavbarProps {
   onRefresh: () => void;
   isRefreshing: boolean;
   companyName: string;
+  onOpenFirebaseModal: () => void;
+  isCloudConnected: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,6 +22,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRefresh,
   isRefreshing,
   companyName,
+  onOpenFirebaseModal,
+  isCloudConnected,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-slate-900 text-white border-b border-slate-800 shadow-md">
@@ -85,13 +90,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Action Zone: Refresh & Admin Toggle */}
+        {/* Action Zone: Cloud Sync, Refresh & Admin Toggle */}
         <div className="flex items-center gap-2">
-          {/* Central Live Sync Status */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400 text-[11px] font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>بيانات مركزية متزامنة</span>
-          </div>
+          {/* Real-time Cloud Connection Badge (Clickable to open modal) */}
+          <button
+            onClick={onOpenFirebaseModal}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
+              isCloudConnected
+                ? 'bg-emerald-950/70 border-emerald-700/80 text-emerald-300 hover:bg-emerald-900/80'
+                : 'bg-amber-950/60 border-amber-600/70 text-amber-300 hover:bg-amber-900/70 animate-pulse'
+            }`}
+            title="إعدادات المزامنة اللحظية السحابية"
+          >
+            {isCloudConnected ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <Cloud className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">سحابي متزامن</span>
+              </>
+            ) : (
+              <>
+                <Flame className="w-3.5 h-3.5 text-amber-400" />
+                <span>ربط Firebase للمزامنة</span>
+              </>
+            )}
+          </button>
 
           {/* Refresh Button */}
           <button
@@ -113,7 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <Shield className="w-3.5 h-3.5" />
-            <span>{isAdminLoggedIn ? 'المسؤول (مفتوح)' : 'لوحة المسؤول'}</span>
+            <span>{isAdminLoggedIn ? 'المسؤول' : 'لوحة المسؤول'}</span>
           </button>
         </div>
       </div>

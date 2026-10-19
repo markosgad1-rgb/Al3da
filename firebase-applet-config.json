@@ -1,9 +1,12 @@
 {
   "projectId": "al3da-74bf3",
-  "appId": "1:1083426281421:web:359daca9e8981890479684",
-  "apiKey": "AIzaSyATa30-VOAD02kBss2htSzV_rQAqnOCJhI",
+  "appId": "1:1083426281421:web:0dfca515fd799876479684",
+  "apiKey": "AIzaSyATa30-VOADO2kBss2htSzV_rQAqnOCJhI",
   "authDomain": "al3da-74bf3.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-cc7a13c4-4953-4e5a-8f19-b5f55f3c8bb2",
   "storageBucket": "al3da-74bf3.firebasestorage.app",
   "messagingSenderId": "1083426281421",
-  "measurementId": "G-ZKH6GC5KBX"
+  "measurementId": "",
+  "oAuthClientId": "1083426281421-34u02nrjsedhl50p7ondahug0u7ifbah.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

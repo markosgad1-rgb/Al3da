@@ -22,6 +22,7 @@ interface AdminManagementViewProps {
   onSaveSettings: (settings: Partial<AppSettings>) => Promise<boolean>;
   onImportBatch: (type: 'tools' | 'technicians' | 'sites', items: any[]) => Promise<boolean>;
   onResetSeed: () => Promise<boolean>;
+  onOpenFirebaseModal?: () => void;
 }
 
 export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
@@ -36,6 +37,7 @@ export const AdminManagementView: React.FC<AdminManagementViewProps> = ({
   onSaveSettings,
   onImportBatch,
   onResetSeed,
+  onOpenFirebaseModal,
 }) => {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState(false);
@@ -703,6 +705,28 @@ function getOrCreateSheet(ss, name, defaultHeaders) {
             <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2">
               <Check className="w-4 h-4" />
               <span>تم حفظ الإعدادات بنجاح!</span>
+            </div>
+          )}
+
+          {/* Firebase Cloud Sync Button in Admin Settings */}
+          {onOpenFirebaseModal && (
+            <div className="p-4 rounded-2xl bg-gradient-to-l from-amber-500/10 via-amber-50 to-slate-50 border border-amber-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <span>المزامنة السحابية اللحظية (Firebase Cloud Sync):</span>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-0.5">
+                  تسمح بربط الهواتف والأجهزة المختلفة أونلاين لحظياً، بحيث تنعكس أي حركة خروج أو رجوع في ثوانٍ معدودة.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenFirebaseModal}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow-xs flex items-center gap-1.5"
+              >
+                <span>إعداد ربط Firebase</span>
+              </button>
             </div>
           )}
 
