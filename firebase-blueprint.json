@@ -1,0 +1,211 @@
+{
+  "entities": {
+    "Tool": {
+      "title": "Tool",
+      "description": "Represents an individual tool or kit available or deployed across job sites.",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Unique tool identifier code like DR-01 or HL-02"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the tool or equipment"
+        },
+        "category": {
+          "type": "string",
+          "description": "Category such as electrical, hand, measurement, ladders"
+        },
+        "cabinet": {
+          "type": "string",
+          "description": "Cabinet number (1, 2, or 3)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Single piece or Kit"
+        },
+        "kitItems": {
+          "type": "string",
+          "description": "List and counts of items inside the kit"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current tool status: available, in site, maintenance, lost"
+        },
+        "currentSite": {
+          "type": "string",
+          "description": "Name of current location if in site"
+        },
+        "currentTechnicians": {
+          "type": "string",
+          "description": "Names of responsible technicians"
+        },
+        "checkoutDate": {
+          "type": "string",
+          "description": "ISO timestamp when tool was checked out"
+        },
+        "notes": {
+          "type": "string",
+          "description": "General or maintenance notes"
+        }
+      },
+      "required": ["code", "name", "cabinet", "status"]
+    },
+    "Technician": {
+      "title": "Technician",
+      "description": "Field installation technician profile",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Technician unique identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Technician full name"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Mobile phone number"
+        },
+        "pin": {
+          "type": "string",
+          "description": "Optional 4-digit PIN"
+        },
+        "active": {
+          "type": "string",
+          "description": "Active status"
+        }
+      },
+      "required": ["id", "name"]
+    },
+    "Site": {
+      "title": "Site",
+      "description": "Work site or compound location",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Site ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Site name"
+        },
+        "address": {
+          "type": "string",
+          "description": "Site address or details"
+        },
+        "active": {
+          "type": "string",
+          "description": "Active status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "name"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Immutable log of tool checkout, return, or transfer",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Transaction unique ID"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of action"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of movement (checkout, return, transfer, maintenance, edit)"
+        },
+        "toolCode": {
+          "type": "string",
+          "description": "Code of tool"
+        },
+        "toolName": {
+          "type": "string",
+          "description": "Name of tool"
+        },
+        "site": {
+          "type": "string",
+          "description": "Target site"
+        },
+        "fromSite": {
+          "type": "string",
+          "description": "Origin site for transfers"
+        },
+        "toSite": {
+          "type": "string",
+          "description": "Destination site for transfers"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Notes"
+        }
+      },
+      "required": ["id", "timestamp", "type", "toolCode"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Application global settings",
+      "type": "object",
+      "properties": {
+        "adminPasswordHash": {
+          "type": "string",
+          "description": "Admin access password"
+        },
+        "overdueDaysThreshold": {
+          "type": "string",
+          "description": "Overdue threshold in days"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Company name"
+        },
+        "whatsappGroupPhone": {
+          "type": "string",
+          "description": "WhatsApp group or supervisor phone"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/tools/{toolCode}": {
+      "schema": {
+        "$ref": "#/entities/Tool"
+      },
+      "description": "Collection of all equipment and tools"
+    },
+    "/technicians/{techId}": {
+      "schema": {
+        "$ref": "#/entities/Technician"
+      },
+      "description": "Registered technicians"
+    },
+    "/sites/{siteId}": {
+      "schema": {
+        "$ref": "#/entities/Site"
+      },
+      "description": "Registered work sites"
+    },
+    "/transactions/{txId}": {
+      "schema": {
+        "$ref": "#/entities/Transaction"
+      },
+      "description": "Permanent audit transactions log"
+    },
+    "/settings/{docId}": {
+      "schema": {
+        "$ref": "#/entities/Settings"
+      },
+      "description": "Global settings document"
+    }
+  }
+}

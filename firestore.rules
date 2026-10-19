@@ -1,27 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Tools collection
     match /tools/{toolCode} {
       allow read, write: if true;
     }
-    // Technicians collection
     match /technicians/{techId} {
       allow read, write: if true;
     }
-    // Sites collection
     match /sites/{siteId} {
       allow read, write: if true;
     }
-    // Transactions audit log collection
     match /transactions/{txId} {
       allow read, write: if true;
     }
-    // App settings collection
     match /settings/{docId} {
       allow read, write: if true;
     }
-    // Default fallback
     match /{document=**} {
       allow read, write: if true;
     }
