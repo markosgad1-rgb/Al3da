@@ -1,0 +1,132 @@
+/**
+ * Utility functions for Arabic formatting, date calculations, and WhatsApp messages
+ */
+
+export function formatDateArabic(isoDateStr?: string): string {
+  if (!isoDateStr) return '—';
+  try {
+    const d = new Date(isoDateStr);
+    return new Intl.DateTimeFormat('ar-EG', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return isoDateStr;
+  }
+}
+
+export function formatTimeArabic(isoDateStr?: string): string {
+  if (!isoDateStr) return '—';
+  try {
+    const d = new Date(isoDateStr);
+    return new Intl.DateTimeFormat('ar-EG', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return isoDateStr;
+  }
+}
+
+export function getDaysSince(isoDateStr?: string): number {
+  if (!isoDateStr) return 0;
+  try {
+    const start = new Date(isoDateStr).getTime();
+    const now = new Date().getTime();
+    const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  } catch {
+    return 0;
+  }
+}
+
+export function formatDurationArabic(isoDateStr?: string): string {
+  const days = getDaysSince(isoDateStr);
+  if (days === 0) return 'اليوم';
+  if (days === 1) return 'منذ يوم';
+  if (days === 2) return 'منذ يومين';
+  if (days >= 3 && days <= 10) return `منذ ${days} أيام`;
+  return `منذ ${days} يوماً`;
+}
+
+/**
+ * Generate formatted WhatsApp message for checkout
+ */
+export function buildCheckoutWhatsAppMessage(params: {
+  companyName?: string;
+  siteName: string;
+  technicians: string[];
+  tools: { code: string; name: string; cabinet?: string; type?: string }[];
+  notes?: string;
+}): string {
+  const nowStr = new Intl.DateTimeFormat('ar-EG', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date());
+
+  const lines = [
+    `📋 *إذن خروج عدة تركيبات*`,
+    `🏢 *الشركة/القسم:* ${params.companyName || 'فريق التركيبات'}`,
+    `📍 *الموقع:* ${params.siteName}`,
+    `👷‍♂️ *الفريق المستلم:* ${params.technicians.join(' + ')}`,
+    `🕒 *الوقت:* ${nowStr}`,
+    ``,
+    `*العدة المسجلة (${params.tools.length} قطعة/طقم):*`,
+  ];
+
+  params.tools.forEach((t, i) => {
+    const cabinetStr = t.cabinet ? ` (دولاب ${t.cabinet})` : '';
+    const typeStr = t.type === 'طقم' ? ' [طقم]' : '';
+    lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr}${typeStr}`);
+  });
+
+  if (params.notes && params.notes.trim()) {
+    lines.push(``);
+    lines.push(`📝 *ملاحظات:* ${params.notes.trim()}`);
+  }
+
+  lines.push(``);
+  lines.push(`✅ *تم التسجيل عبر نظام متابعة العدة*`);
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate formatted WhatsApp message for site transfer
+ */
+export function buildTransferWhatsAppMessage(params: {
+  fromSite: string;
+  toSite: string;
+  technicianName: string;
+  tools: { code: string; name: string }[];
+  notes?: string;
+}): string {
+  const nowStr = new Intl.DateTimeFormat('ar-EG', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date());
+
+  const lines = [
+    `🔄 *إذن نقل عدة بين مواقع*`,
+    `📤 *من موقع:* ${params.fromSite}`,
+    `📥 *إلى موقع:* ${params.toSite}`,
+    `👷‍♂️ *الفني القائم بالنقل:* ${params.technicianName}`,
+    `🕒 *الوقت:* ${nowStr}`,
+    ``,
+    `*العدة المنقولة (${params.tools.length} قطعة):*`,
+  ];
+
+  params.tools.forEach((t, i) => {
+    lines.push(`${i + 1}. [${t.code}] ${t.name}`);
+  });
+
+  if (params.notes && params.notes.trim()) {
+    lines.push(``);
+    lines.push(`📝 *ملاحظات:* ${params.notes.trim()}`);
+  }
+
+  return lines.join('\n');
+}
