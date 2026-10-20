@@ -174,7 +174,6 @@ export default function App() {
       const res = await api.returnTools(payload);
       if (res.data) setData(res.data);
       showToast(res.message);
-      setCurrentTab('home');
       return true;
     } catch (err: any) {
       throw err;
@@ -379,6 +378,7 @@ export default function App() {
           <ReturnView
             data={data}
             onReturnSubmit={handleReturnSubmit}
+            onOpenWhatsApp={handleOpenWhatsApp}
             onCancel={() => setCurrentTab('home')}
             onOpenToolDossier={handleOpenToolDossier}
           />

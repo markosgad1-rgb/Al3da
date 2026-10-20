@@ -4,6 +4,7 @@ import {
   X, Box, AlertCircle, Sparkles, User, FileText 
 } from 'lucide-react';
 import { Tool, Technician, Site, AppData } from '../types';
+import { buildReturnWhatsAppMessage } from '../utils/formatters';
 
 interface ReturnViewProps {
   data: AppData;
@@ -18,6 +19,7 @@ interface ReturnViewProps {
     returnedBy?: string;
     generalNotes?: string;
   }) => Promise<boolean>;
+  onOpenWhatsApp: (message: string) => void;
   onCancel: () => void;
   onOpenToolDossier: (tool: Tool) => void;
 }
@@ -25,6 +27,7 @@ interface ReturnViewProps {
 export const ReturnView: React.FC<ReturnViewProps> = ({
   data,
   onReturnSubmit,
+  onOpenWhatsApp,
   onCancel,
   onOpenToolDossier,
 }) => {
@@ -147,7 +150,33 @@ export const ReturnView: React.FC<ReturnViewProps> = ({
       });
 
       if (ok) {
-        // Clear checked
+        // Build return tools info for WhatsApp message
+        const returnedToolsInfo = itemsToReturn.map((t) => {
+          const st = returnState[t.code];
+          const isKit = t.type === 'طقم';
+          return {
+            code: t.code,
+            name: t.name,
+            cabinet: t.cabinet,
+            type: t.type,
+            isKit,
+            kitComplete: isKit ? (st?.kitComplete ?? true) : true,
+            missingItemsNotes: isKit && !st?.kitComplete ? st?.missingNotes : undefined,
+          };
+        });
+
+        const msg = buildReturnWhatsAppMessage({
+          companyName: data.settings.companyName,
+          siteName: selectedSiteName,
+          returnedBy: returnedByTech,
+          tools: returnedToolsInfo,
+          generalNotes: generalNotes.trim(),
+        });
+
+        // Trigger WhatsApp Share Modal
+        onOpenWhatsApp(msg);
+
+        // Clear checked state
         setReturnState({});
       }
     } catch (err: any) {

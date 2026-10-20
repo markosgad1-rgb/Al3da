@@ -130,3 +130,77 @@ export function buildTransferWhatsAppMessage(params: {
 
   return lines.join('\n');
 }
+
+/**
+ * Generate formatted WhatsApp message for return
+ */
+export function buildReturnWhatsAppMessage(params: {
+  companyName?: string;
+  siteName: string;
+  returnedBy?: string;
+  tools: {
+    code: string;
+    name: string;
+    cabinet?: string;
+    type?: string;
+    isKit?: boolean;
+    kitComplete?: boolean;
+    missingItemsNotes?: string;
+  }[];
+  generalNotes?: string;
+}): string {
+  const nowStr = new Intl.DateTimeFormat('ar-EG', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date());
+
+  const lines = [
+    `📥 *إذن رجوع عدة إلى المخزن المركزي*`,
+    `🏢 *الشركة/القسم:* ${params.companyName || 'فريق التركيبات'}`,
+    `📍 *راجع من موقع:* ${params.siteName}`,
+  ];
+
+  if (params.returnedBy && params.returnedBy.trim()) {
+    lines.push(`👷‍♂️ *الفني المسلِّم:* ${params.returnedBy.trim()}`);
+  }
+
+  lines.push(`🕒 *الوقت:* ${nowStr}`);
+  lines.push(``);
+  lines.push(`*العدة المرتجعة (${params.tools.length} قطعة/طقم):*`);
+
+  const missingItemsAlerts: string[] = [];
+
+  params.tools.forEach((t, i) => {
+    const cabinetStr = t.cabinet ? ` (دولاب ${t.cabinet})` : '';
+    if (t.isKit || t.type === 'طقم') {
+      if (t.kitComplete === false) {
+        lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr} ⚠️ [طقم به نواقص]`);
+        if (t.missingItemsNotes) {
+          lines.push(`    ↳ النواقص: ${t.missingItemsNotes}`);
+          missingItemsAlerts.push(`[${t.code}] ${t.name}: ${t.missingItemsNotes}`);
+        }
+      } else {
+        lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr} [طقم كامل ✅]`);
+      }
+    } else {
+      lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr}`);
+    }
+  });
+
+  if (missingItemsAlerts.length > 0) {
+    lines.push(``);
+    lines.push(`⚠️ *تنبيه بنواقص تم تسجيلها أثناء الاستلام:*`);
+    missingItemsAlerts.forEach((m) => lines.push(`• ${m}`));
+  }
+
+  if (params.generalNotes && params.generalNotes.trim()) {
+    lines.push(``);
+    lines.push(`📝 *ملاحظات الاستلام:* ${params.generalNotes.trim()}`);
+  }
+
+  lines.push(``);
+  lines.push(`✅ *تم استلام العدة بالمخزن وتحديث حالتها إلى [متاح]*`);
+
+  return lines.join('\n');
+}
+
