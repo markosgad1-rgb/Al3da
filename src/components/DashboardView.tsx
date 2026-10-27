@@ -24,7 +24,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   >('overdue');
 
   const [toolSearch, setToolSearch] = useState('');
-  const [selectedCabinet, setSelectedCabinet] = useState<'1' | '2' | '3'>('1');
+  const [cabinetStatusFilter, setCabinetStatusFilter] = useState<'all' | 'متاح' | 'في موقع' | 'صيانة' | 'مفقود'>('all');
   const [expandedSite, setExpandedSite] = useState<string | null>(null);
   const [expandedTech, setExpandedTech] = useState<string | null>(null);
 
@@ -48,14 +48,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       });
   }, [data.tools, thresholdDays]);
 
-  // Group tools by Cabinet
-  const toolsByCabinet = useMemo(() => {
-    return {
-      '1': data.tools.filter((t) => t.cabinet === '1'),
-      '2': data.tools.filter((t) => t.cabinet === '2'),
-      '3': data.tools.filter((t) => t.cabinet === '3'),
-    };
-  }, [data.tools]);
+  // Tools in the single Unified Warehouse Cabinet
+  const cabinetTools = useMemo(() => {
+    if (cabinetStatusFilter === 'all') return data.tools;
+    return data.tools.filter((t) => t.status === cabinetStatusFilter);
+  }, [data.tools, cabinetStatusFilter]);
 
   // Group tools by Site
   const toolsBySite = useMemo(() => {
@@ -270,7 +267,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
         <div className="flex items-center gap-1.5">
           {[
-            { id: 'cabinets', label: 'حسب الدواليب (1، 2، 3)', icon: Layers },
+            { id: 'cabinets', label: 'دولاب العدة (المخزن)', icon: Layers },
             { id: 'sites', label: `حسب المواقع (${Object.keys(toolsBySite).length})`, icon: MapPin },
             { id: 'technicians', label: `حسب الفنيين (${Object.keys(toolsByTechnician).length})`, icon: Users },
             { id: 'allTools', label: `كل العدة (${data.tools.length})`, icon: Wrench },
@@ -311,91 +308,123 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: BY CABINETS (الدواليب) */}
+      {/* TAB 1: UNIFIED CABINET (دولاب العدة الموحد) */}
       {activeSubTab === 'cabinets' && (
         <div className="space-y-4">
-          {/* Cabinet Switcher */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: '1', title: 'دولاب 1', desc: 'معدات ثقيلة كهربائية' },
-              { id: '2', title: 'دولاب 2', desc: 'أطقم ومفكات وقياس' },
-              { id: '3', title: 'دولاب 3', desc: 'سلالم وتمديدات موقع' },
-            ].map((cab) => (
-              <button
-                key={cab.id}
-                onClick={() => setSelectedCabinet(cab.id as any)}
-                className={`p-3 rounded-2xl border text-right transition-all ${
-                  selectedCabinet === cab.id
-                    ? 'bg-amber-500 text-slate-950 border-amber-600 font-bold shadow-sm'
-                    : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
-                }`}
-              >
-                <div className="text-xs sm:text-sm font-black">{cab.title}</div>
-                <div className={`text-[10px] mt-0.5 truncate ${selectedCabinet === cab.id ? 'text-slate-900/80' : 'text-slate-400'}`}>
-                  {cab.desc}
+          {/* Warehouse Cabinet Header & Filter Pills */}
+          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center text-lg">
+                  🗄️
                 </div>
-                <div className="text-xs mt-1.5 font-bold tabular-nums">
-                  {toolsByCabinet[cab.id as '1' | '2' | '3'].length} قطعة
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Tools Grid inside selected cabinet */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {toolsByCabinet[selectedCabinet].map((tool) => (
-              <div
-                key={tool.code}
-                onClick={() => onOpenToolDossier(tool)}
-                className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:shadow-sm cursor-pointer transition-all flex flex-col justify-between"
-              >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono font-black text-xs px-2.5 py-0.5 rounded-md bg-slate-900 text-white">
-                      {tool.code}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                        tool.status === 'متاح'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : tool.status === 'في موقع'
-                          ? 'bg-amber-100 text-amber-800'
-                          : tool.status === 'صيانة'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-rose-100 text-rose-800'
-                      }`}
-                    >
-                      {tool.status}
-                    </span>
-                  </div>
-
-                  <div className="text-xs sm:text-sm font-bold text-slate-800">{tool.name}</div>
-                  {tool.type === 'طقم' && tool.kitItems && (
-                    <div className="text-[10px] text-amber-700 mt-1 line-clamp-1">
-                      طقم: {tool.kitItems}
-                    </div>
-                  )}
-
-                  {tool.status === 'في موقع' && (
-                    <div className="mt-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg">
-                      <div className="font-semibold text-slate-800 truncate">
-                        📍 {tool.currentSite}
-                      </div>
-                      <div className="text-slate-500 mt-0.5 truncate">
-                        👷‍♂️ {(tool.currentTechnicians || []).join('، ')} ·{' '}
-                        {formatDurationArabic(tool.checkoutDate)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-                  <span>التصنيف: {tool.category}</span>
-                  <span className="text-amber-600 font-bold">معاينة السجل ←</span>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900">دولاب العدة (المخزن الرئيسي)</h3>
+                  <p className="text-xs text-slate-500">المخزن الموحد لكافة العدد والمعدات والأطقم</p>
                 </div>
               </div>
-            ))}
+
+              <div className="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto">
+                إجمالي العدة بالدولاب: <span className="text-amber-700 font-extrabold">{data.tools.length}</span> قطعة
+              </div>
+            </div>
+
+            {/* Status Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 scrollbar-none">
+              <span className="text-[11px] font-bold text-slate-400 shrink-0 ml-1">تصفية العرض:</span>
+              {[
+                { id: 'all', label: 'كل العدة', count: data.tools.length },
+                { id: 'متاح', label: 'متاح بالدولاب حالياً', count: availableCount },
+                { id: 'في موقع', label: 'خارج في مواقع', count: inSiteCount },
+                { id: 'صيانة', label: 'في الصيانة', count: maintenanceCount },
+                { id: 'مفقود', label: 'مفقود', count: lostCount },
+              ].map((chip) => {
+                const isSelected = cabinetStatusFilter === chip.id;
+                return (
+                  <button
+                    key={chip.id}
+                    onClick={() => setCabinetStatusFilter(chip.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
+                      isSelected
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700'
+                    }`}
+                  >
+                    <span>{chip.label}</span>
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                        isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {chip.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Tools Grid inside cabinet */}
+          {cabinetTools.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200">
+              لا توجد قطع عدة مطابقة للتصفية المختارة
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {cabinetTools.map((tool) => (
+                <div
+                  key={tool.code}
+                  onClick={() => onOpenToolDossier(tool)}
+                  className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs hover:shadow-sm cursor-pointer transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono font-black text-xs px-2.5 py-0.5 rounded-md bg-slate-900 text-white">
+                        {tool.code}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                          tool.status === 'متاح'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : tool.status === 'في موقع'
+                            ? 'bg-amber-100 text-amber-800'
+                            : tool.status === 'صيانة'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-rose-100 text-rose-800'
+                        }`}
+                      >
+                        {tool.status}
+                      </span>
+                    </div>
+
+                    <div className="text-xs sm:text-sm font-bold text-slate-800">{tool.name}</div>
+                    {tool.type === 'طقم' && tool.kitItems && (
+                      <div className="text-[10px] text-amber-700 mt-1 line-clamp-1">
+                        طقم: {tool.kitItems}
+                      </div>
+                    )}
+
+                    {tool.status === 'في موقع' && (
+                      <div className="mt-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg">
+                        <div className="font-semibold text-slate-800 truncate">
+                          📍 {tool.currentSite}
+                        </div>
+                        <div className="text-slate-500 mt-0.5 truncate">
+                          👷‍♂️ {(tool.currentTechnicians || []).join('، ')} ·{' '}
+                          {formatDurationArabic(tool.checkoutDate)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                    <span>التصنيف: {tool.category}</span>
+                    <span className="text-amber-600 font-bold">معاينة السجل ←</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -583,7 +612,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span className="bg-slate-100 px-2 py-1 rounded-md">{t.code}</span>
                     </td>
                     <td className="p-3 font-bold text-slate-800">{t.name}</td>
-                    <td className="p-3 text-slate-600">دولاب {t.cabinet}</td>
+                    <td className="p-3 text-slate-600">دولاب العدة</td>
                     <td className="p-3 text-slate-600">{t.category}</td>
                     <td className="p-3">
                       {t.type === 'طقم' ? (

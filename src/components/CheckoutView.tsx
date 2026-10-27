@@ -43,7 +43,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [cabinetFilter, setCabinetFilter] = useState<'all' | '1' | '2' | '3'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   // Submitting status & error message
@@ -53,8 +52,6 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   // Filter tools
   const filteredTools = useMemo(() => {
     return data.tools.filter((t) => {
-      // Cabinet filter
-      if (cabinetFilter !== 'all' && t.cabinet !== cabinetFilter) return false;
       // Category filter
       if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
       // Search query (code or name)
@@ -66,7 +63,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
       }
       return true;
     });
-  }, [data.tools, cabinetFilter, categoryFilter, searchQuery]);
+  }, [data.tools, categoryFilter, searchQuery]);
 
   // Available vs Unavailable inside filtered
   const availableTools = useMemo(
@@ -368,23 +365,25 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
               )}
             </div>
 
-            {/* Filter Tabs: Cabinets */}
+            {/* Filter Tabs: Categories */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-3 scrollbar-none">
               <span className="text-[11px] text-slate-400 font-semibold shrink-0 ml-1">
-                الدولاب:
+                التصنيف:
               </span>
               {[
-                { id: 'all', label: 'الكل' },
-                { id: '1', label: 'دولاب 1 (كهربائي)' },
-                { id: '2', label: 'دولاب 2 (أطقم وقياس)' },
-                { id: '3', label: 'دولاب 3 (سلالم وموقع)' },
+                { id: 'all', label: 'كل العدة' },
+                { id: 'كهربائي', label: 'كهربائي' },
+                { id: 'يدوي', label: 'يدوي' },
+                { id: 'قياس', label: 'أجهزة قياس' },
+                { id: 'سلالم', label: 'سلالم وتمديدات' },
+                { id: 'أخرى', label: 'أخرى' },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setCabinetFilter(tab.id as any)}
+                  onClick={() => setCategoryFilter(tab.id)}
                   className={`px-3 py-1 text-xs font-semibold rounded-lg shrink-0 transition-colors ${
-                    cabinetFilter === tab.id
+                    categoryFilter === tab.id
                       ? 'bg-slate-900 text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
@@ -397,7 +396,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
             {/* Available Tools Grid */}
             <div className="space-y-2">
               <div className="text-[11px] font-bold text-emerald-700 flex items-center justify-between">
-                <span>القطع المتاحة في المخزن ({availableTools.length}):</span>
+                <span>القطع المتاحة في دولاب المخزن ({availableTools.length}):</span>
                 {selectedToolCodes.length > 0 && (
                   <span className="text-amber-700 font-extrabold">
                     تم اختيار ({selectedToolCodes.length}) قطعة
@@ -407,7 +406,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
               {availableTools.length === 0 ? (
                 <div className="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">
-                  لا توجد عدة متاحة مطابقة للبحث في هذا الدولاب
+                  لا توجد عدة متاحة مطابقة للبحث في المخزن
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -429,7 +428,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                               {tool.code}
                             </span>
                             <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
-                              دولاب {tool.cabinet}
+                              {tool.category}
                             </span>
                             {tool.type === 'طقم' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold">
@@ -586,7 +585,7 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                     </span>
                     <span className="font-bold text-slate-800">{t.name}</span>
                   </div>
-                  <span className="text-[11px] text-slate-500">دولاب {t.cabinet}</span>
+                  <span className="text-[11px] text-slate-500">{t.category}</span>
                 </div>
               ))}
             </div>

@@ -23,7 +23,7 @@ export const initialSeedData: AppData = {
     { id: 'site-5', name: 'مشروع أبراج العلمين', address: 'البرج السكني B', active: false, createdAt: '2026-08-01T08:00:00.000Z' },
   ],
   tools: [
-    // الدولاب 1: معدات ثقيلة كهربائية
+    // معدات كهربائية وثقيلة
     {
       code: 'HL-01',
       name: 'هيلتي بوش 800 واط تكسير وتخريم',
@@ -87,12 +87,12 @@ export const initialSeedData: AppData = {
       notes: 'في علبة معدنية حمراء',
     },
 
-    // الدولاب 2: أطقم ومفكات وقياس
+    // أطقم ومفكات وقياس
     {
       code: 'KT-01',
       name: 'طقم بنط هيلتي وفيدياه وتكسير 8 قطع',
       category: 'كهربائي',
-      cabinet: '2',
+      cabinet: '1',
       type: 'طقم',
       kitItems: 'بنط 6 مم × 2، بنط 8 مم × 2، بنط 10 مم × 2، إزميل عريض × 1، سنبلة تكسير × 1',
       status: 'في موقع',
@@ -105,7 +105,7 @@ export const initialSeedData: AppData = {
       code: 'KT-02',
       name: 'طقم مفكات معزول 1000V كهرباء 7 قطع',
       category: 'يدوي',
-      cabinet: '2',
+      cabinet: '1',
       type: 'طقم',
       kitItems: 'عادة 3 مم × 1، عادة 4 مم × 1، عادة 5.5 مم × 1، صليبة PH1 × 1، صليبة PH2 × 1، مفك تيست معتمد × 1، مقبض مريح × 1',
       status: 'متاح',
@@ -115,7 +115,7 @@ export const initialSeedData: AppData = {
       code: 'KT-03',
       name: 'شنطة لقم وسيستم نصف بوصة 24 قطعة',
       category: 'يدوي',
-      cabinet: '2',
+      cabinet: '1',
       type: 'طقم',
       kitItems: 'لقم من 10 إلى 32 مم × 18، يد سيستم سريعة × 1، وصلة تطويل 10 سم × 1، وصلة 25 سم × 1، مفصلة مرنة × 1، يد T حرة × 1',
       status: 'متاح',
@@ -125,7 +125,7 @@ export const initialSeedData: AppData = {
       code: 'LS-01',
       name: 'ميزان ليزر 360 درجة بوش ليزر أخضر + حامل ثلاثي',
       category: 'قياس',
-      cabinet: '2',
+      cabinet: '1',
       type: 'طقم',
       kitItems: 'جهاز الليزر الأخضر × 1، حامل ثلاثي ألومنيوم Tripod × 1، نظارة رؤية ليزر × 1، بطاريات قابلة للشحن × 2، شاحن × 1',
       status: 'في موقع',
@@ -139,18 +139,18 @@ export const initialSeedData: AppData = {
       code: 'TS-01',
       name: 'جهاز قياس وفحص شبكات Fluke كوابل ليد وباتش',
       category: 'قياس',
-      cabinet: '2',
+      cabinet: '1',
       type: 'قطعة واحدة',
       status: 'متاح',
       notes: 'مع الوصلات وحافظة الحماية',
     },
 
-    // الدولاب 3: سلالم وكابلات تمديد ومعدات الموقع
+    // سلالم وكابلات تمديد ومعدات الموقع
     {
       code: 'LD-01',
       name: 'سلم ألومنيوم مفصلي 4.7 متر متعدد الأوضاع',
       category: 'سلالم',
-      cabinet: '3',
+      cabinet: '1',
       type: 'قطعة واحدة',
       status: 'في موقع',
       currentSite: 'مول مصر - 6 أكتوبر',
@@ -162,7 +162,7 @@ export const initialSeedData: AppData = {
       code: 'LD-02',
       name: 'سلم تلسكوبي فردي 3.8 متر مدمج',
       category: 'سلالم',
-      cabinet: '3',
+      cabinet: '1',
       type: 'قطعة واحدة',
       status: 'متاح',
       notes: 'سهل النقل في شنطة العربية',
@@ -171,7 +171,7 @@ export const initialSeedData: AppData = {
       code: 'EX-01',
       name: 'بكرة كابل تمديد صناعي 50 متر 3×2.5 مم',
       category: 'كهربائي',
-      cabinet: '3',
+      cabinet: '1',
       type: 'قطعة واحدة',
       status: 'متاح',
       notes: 'مع 4 فيش صناعية ومفتاح أوفرلود حماية',
@@ -180,7 +180,7 @@ export const initialSeedData: AppData = {
       code: 'EX-02',
       name: 'بكرة كابل تمديد 25 متر 3×1.5 مم',
       category: 'كهربائي',
-      cabinet: '3',
+      cabinet: '1',
       type: 'قطعة واحدة',
       status: 'صيانة',
       notes: 'الفيشة بها قطع وتحتاج تغيير رأس الفيشة',

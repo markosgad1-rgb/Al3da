@@ -457,7 +457,7 @@ app.post('/api/import', (req: Request, res: Response) => {
         code,
         name: String(item.name).trim(),
         category: item.category || 'أخرى',
-        cabinet: (['1', '2', '3'].includes(String(item.cabinet)) ? String(item.cabinet) : '1') as any,
+        cabinet: '1',
         type: item.type === 'طقم' ? 'طقم' : 'قطعة واحدة',
         kitItems: item.kitItems ? String(item.kitItems).trim() : '',
         status: (['متاح', 'في موقع', 'صيانة', 'مفقود'].includes(item.status) ? item.status : 'متاح') as any,

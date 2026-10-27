@@ -374,7 +374,7 @@ function getOrCreateSheet(ss, name, defaultHeaders) {
                     </span>
                     <span className="font-bold text-slate-800 text-xs sm:text-sm">{tool.name}</span>
                     <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                      دولاب {tool.cabinet}
+                      دولاب العدة
                     </span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
@@ -905,16 +905,14 @@ function getOrCreateSheet(ss, name, defaultHeaders) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">
-                    الدولاب:
+                    المخزن / الدولاب:
                   </label>
                   <select
                     value={editingTool.cabinet || '1'}
                     onChange={(e) => setEditingTool({ ...editingTool, cabinet: e.target.value as any })}
-                    className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold"
+                    className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold text-slate-800"
                   >
-                    <option value="1">دولاب 1</option>
-                    <option value="2">دولاب 2</option>
-                    <option value="3">دولاب 3</option>
+                    <option value="1">دولاب العدة (المخزن الموحد)</option>
                   </select>
                 </div>
 

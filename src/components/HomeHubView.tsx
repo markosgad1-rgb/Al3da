@@ -172,29 +172,49 @@ export const HomeHubView: React.FC<HomeHubViewProps> = ({
         </div>
       </div>
 
-      {/* Cabinets Overview Card */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs">
+      {/* Single Cabinet Overview Card (دولاب العدة الموحد) */}
+      <div 
+        onClick={() => onNavigate('dashboard')}
+        className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs hover:border-amber-400 cursor-pointer transition-all group"
+      >
         <div className="flex items-center justify-between mb-3">
-          <div className="text-xs font-bold text-slate-700">دواليب العدة الثلاثة:</div>
-          <span className="text-[11px] text-slate-400 font-medium">مخزن الورشة المركزي</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center font-bold">
+              🗄️
+            </div>
+            <div>
+              <div className="text-sm font-black text-slate-900 group-hover:text-amber-700 transition-colors">
+                دولاب العدة (المخزن الرئيسي)
+              </div>
+              <div className="text-[11px] text-slate-400 font-medium">مستودع العُدة الموحد للورشة والمشاريع</div>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200/60">
+            {data.tools.length} قطعة مسجلة
+          </span>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          {[
-            { id: '1', title: 'دولاب 1', desc: 'معدات ثقيلة كهربائية', count: data.tools.filter((t) => t.cabinet === '1').length },
-            { id: '2', title: 'دولاب 2', desc: 'أطقم ومفكات وقياس', count: data.tools.filter((t) => t.cabinet === '2').length },
-            { id: '3', title: 'دولاب 3', desc: 'سلالم وكابلات تمديد', count: data.tools.filter((t) => t.cabinet === '3').length },
-          ].map((c) => (
-            <div
-              key={c.id}
-              onClick={() => onNavigate('dashboard')}
-              className="p-3 rounded-2xl bg-slate-50 hover:bg-amber-50/50 border border-slate-200 cursor-pointer transition-colors text-right"
-            >
-              <div className="text-xs font-black text-slate-900">{c.title}</div>
-              <div className="text-[10px] text-slate-500 mt-0.5 truncate">{c.desc}</div>
-              <div className="text-xs font-bold text-amber-700 mt-1 tabular-nums">{c.count} قطعة</div>
+          <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 text-right">
+            <div className="text-[11px] font-bold text-emerald-800">متاح بالدولاب الآن</div>
+            <div className="text-base font-black text-emerald-700 mt-1 tabular-nums">
+              {data.tools.filter((t) => t.status === 'متاح').length} <span className="text-xs font-normal">قطعة</span>
             </div>
-          ))}
+          </div>
+
+          <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-100 text-right">
+            <div className="text-[11px] font-bold text-amber-800">خارج في مواقع</div>
+            <div className="text-base font-black text-amber-700 mt-1 tabular-nums">
+              {data.tools.filter((t) => t.status === 'في موقع').length} <span className="text-xs font-normal">قطعة</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-right">
+            <div className="text-[11px] font-bold text-slate-700">صيانة / أخرى</div>
+            <div className="text-base font-black text-slate-800 mt-1 tabular-nums">
+              {data.tools.filter((t) => t.status === 'صيانة' || t.status === 'مفقود').length} <span className="text-xs font-normal">قطعة</span>
+            </div>
+          </div>
         </div>
       </div>
 

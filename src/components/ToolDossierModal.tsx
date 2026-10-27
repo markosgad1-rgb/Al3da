@@ -75,7 +75,7 @@ export const ToolDossierModal: React.FC<ToolDossierModalProps> = ({
             <div>
               <h2 className="text-base sm:text-lg font-bold leading-tight text-white">{tool.name}</h2>
               <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                <span>دولاب {tool.cabinet}</span>
+                <span>دولاب العدة (المخزن)</span>
                 <span>·</span>
                 <span>{tool.category}</span>
                 <span>·</span>

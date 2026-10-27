@@ -78,9 +78,8 @@ export function buildCheckoutWhatsAppMessage(params: {
   ];
 
   params.tools.forEach((t, i) => {
-    const cabinetStr = t.cabinet ? ` (دولاب ${t.cabinet})` : '';
     const typeStr = t.type === 'طقم' ? ' [طقم]' : '';
-    lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr}${typeStr}`);
+    lines.push(`${i + 1}. [${t.code}] ${t.name}${typeStr}`);
   });
 
   if (params.notes && params.notes.trim()) {
@@ -171,19 +170,18 @@ export function buildReturnWhatsAppMessage(params: {
   const missingItemsAlerts: string[] = [];
 
   params.tools.forEach((t, i) => {
-    const cabinetStr = t.cabinet ? ` (دولاب ${t.cabinet})` : '';
     if (t.isKit || t.type === 'طقم') {
       if (t.kitComplete === false) {
-        lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr} ⚠️ [طقم به نواقص]`);
+        lines.push(`${i + 1}. [${t.code}] ${t.name} ⚠️ [طقم به نواقص]`);
         if (t.missingItemsNotes) {
           lines.push(`    ↳ النواقص: ${t.missingItemsNotes}`);
           missingItemsAlerts.push(`[${t.code}] ${t.name}: ${t.missingItemsNotes}`);
         }
       } else {
-        lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr} [طقم كامل ✅]`);
+        lines.push(`${i + 1}. [${t.code}] ${t.name} [طقم كامل ✅]`);
       }
     } else {
-      lines.push(`${i + 1}. [${t.code}] ${t.name}${cabinetStr}`);
+      lines.push(`${i + 1}. [${t.code}] ${t.name}`);
     }
   });
 

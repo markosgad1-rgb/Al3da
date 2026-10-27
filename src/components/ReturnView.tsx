@@ -304,7 +304,7 @@ export const ReturnView: React.FC<ReturnViewProps> = ({
                           {tool.code}
                         </span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
-                          دولاب {tool.cabinet}
+                          {tool.category}
                         </span>
                         {tool.type === 'طقم' && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold flex items-center gap-1">

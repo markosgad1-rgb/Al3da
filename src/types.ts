@@ -3,7 +3,7 @@
  */
 
 export type ToolStatus = 'متاح' | 'في موقع' | 'صيانة' | 'مفقود';
-export type ToolCabinet = '1' | '2' | '3';
+export type ToolCabinet = '1' | string;
 export type ToolType = 'قطعة واحدة' | 'طقم';
 export type ToolCategory = 'كهربائي' | 'يدوي' | 'قياس' | 'سلالم' | 'أخرى';
 
@@ -11,7 +11,7 @@ export interface Tool {
   code: string; // كود فريد موجود على القطعة، مثلاً DR-01
   name: string; // اسم العدة، مثلاً شنيور ماكيتا 18V
   category: ToolCategory; // التصنيف
-  cabinet: ToolCabinet; // الدولاب (1 أو 2 أو 3)
+  cabinet: ToolCabinet; // دولاب العدة الموحد (المخزن الرئيسي)
   type: ToolType; // قطعة واحدة أو طقم
   kitItems?: string; // محتويات الطقم للأطقم، مثلاً «بنط 6 مم × 2، بنط 8 مم × 2»
   status: ToolStatus; // الحالة
